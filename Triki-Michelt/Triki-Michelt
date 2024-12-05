@@ -1,0 +1,148 @@
+#Crear un motor  
+import pygame
+pygame.init()
+
+#Definir las dimensiones que va a tener la ventana
+screen = pygame.display.set_mode((450,450))
+pygame.display.set_caption("Juego TRIKI")
+
+#Cargar las imágenes
+fondo=pygame.image.load("Imagenes/Tablero.png")
+circulo=pygame.image.load("Imagenes/Circulo.png")
+equis=pygame.image.load("Imagenes/Equis.png")
+resetear=pygame.image.load("Imagenes/Resetear.jpg")
+ganar=pygame.image.load("Imagenes/GANASTE.png")
+empate=pygame.image.load("Imagenes/Empate.png")
+
+#Renderizar las imágenes
+fondo=pygame.transform.scale(fondo,(450,450))
+circulo=pygame.transform.scale(circulo,(125,125))
+equis=pygame.transform.scale(equis,(125,125))
+resetear=pygame.transform.scale(resetear,(50,50))
+ganar=pygame.transform.scale(ganar,(200,100))
+empate=pygame.transform.scale(empate,(200,100))
+
+#Creamos las matrices de guía
+
+coordenadas=[[(40,50),(165,50),(290,50)],
+             [(40,175),(165,175),(290,175)],
+             [(40,300),(165,300),(290,300)]]
+
+tablero=[['','',''],
+         ['','',''],
+         ['','','']]
+
+#Variables de control
+#Saber de quien es el turno
+turno='O'
+#fin del juego
+game_over=False
+ganador=False
+reloj=pygame.time.Clock()
+
+#Establecer la lógica del juego
+
+def graficar_tablero():
+    #Llenamos la ventana con la imágen de fondo
+    screen.blit(fondo,(0,0))
+    screen.blit(resetear,(0,0))
+    
+    for fila in range(3):
+        for columna in range (3):
+            if tablero [fila][columna]=='O':
+                graficar_O(fila,columna)
+            elif tablero [fila][columna]=='X':
+                graficar_X(fila,columna)
+    
+    
+                
+#Función para graficar la X o la O
+def graficar_O(fila,columna):
+    screen.blit(circulo,coordenadas[fila][columna])
+
+def graficar_X(fila,columna):
+    screen.blit(equis,coordenadas[fila][columna])
+
+# Función para verificar el ganador
+def verificar_ganador():
+    global ganador, game_over
+    # Revisar filas
+    for fila in tablero:
+        if fila[0] == fila[1] == fila[2] and fila[0] != '':
+            ganador = fila[0]
+            game_over = True
+            return
+
+    # Revisar columnas
+    for columna in range(3):
+        if tablero[0][columna] == tablero[1][columna] == tablero[2][columna] and tablero[0][columna] != '':
+            ganador = tablero[0][columna]
+            game_over = True
+            return
+
+    # Revisar diagonales
+    if tablero[0][0] == tablero[1][1] == tablero[2][2] and tablero[0][0] != '':
+        ganador = tablero[0][0]
+        game_over = True
+        return
+
+    if tablero[0][2] == tablero[1][1] == tablero[2][0] and tablero[0][2] != '':
+        ganador = tablero[0][2]
+        game_over = True
+        return
+
+    # Verificar si el tablero está lleno
+    if all(all(casilla != '' for casilla in fila) for fila in tablero):
+        game_over = False
+        
+        
+    
+#Iniciar el juego
+while not game_over:
+    
+    reloj.tick(30 )
+    
+    
+    for event in pygame.event.get():
+        #Definimos cuando se cierra el juego con el botón cerrar
+        if event.type==pygame.QUIT:
+            game_over=True
+            
+        elif event.type==pygame.MOUSEBUTTONDOWN:
+            mouseX,mouseY=event.pos
+            if(mouseX >=40 and mouseX<415 ) and (mouseY >=50 and mouseX<425 ):
+               fila=(mouseY-50)//125
+               columna=(mouseX-40)//125
+               if tablero[fila][columna]=='':
+                   tablero[fila][columna]=turno
+                   if turno=='O':
+                       turno='X'
+                   else:
+                     turno='O'
+                   verificar_ganador() 
+                     
+            elif 0<= mouseX<39  and 0<=mouseY<49 :
+                 tablero=[['','',''],
+                         ['','',''],
+                         ['','','']]
+                
+        
+    graficar_tablero()
+     # Mostrar la imagen "GANASTE" si hay un ganador
+    if ganador:
+        screen.blit(ganar, (125, 175))  
+        
+    elif game_over and not ganador:
+     screen.blit(empate, (125, 175)) 
+    
+    pygame.display.update()
+    
+# Mostrar mensaje de ganador o empate
+#if ganador:
+    #print(f"¡El ganador es {ganador}!")
+
+while game_over:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            quit()
